@@ -2,15 +2,23 @@
 # -*- coding: utf-8 -*-
 # Author: graypawn (choi.pawn @gmail.com)
 # Created: 2016-05-29
+usage () {
+    echo "Usage: $0 [OUTPUT]"
+}
 
-output=HDMI2
-X=1920
-Y=0
+if [ -z $1 ]; then
+    usage >&2
+    exit 1
+fi
 
+output=$1
 if (xrandr --listmonitors | grep $output 1>/dev/null); then
     xrandr --output $output --off
     echo $output turn off
 else
+    xorg_log=`cat /var/log/Xorg.0.log | grep "$output using pipe" | tail -n 1 | awk -F'position ' '{print $2}'`
+    X=`echo $xorg_log | awk -F',' '{print $1}' | sed 's/(//'`
+    Y=`echo $xorg_log | awk -F',' '{print $2}' | sed 's/)//'`
     xrandr --output $output --auto --pos "$X"x"$Y"
     echo $output turn on
 fi
